@@ -60,6 +60,33 @@ data Bool : Set where
   false : Bool
   true  : Bool
 
+-- Definition negb (b:bool) : bool :=
+--   match b with
+--   | true => false
+--   | false => true
+--   end.
+¬ : Bool -> Bool
+¬ true  = false
+¬ false = true
+
+-- Definition andb (b1:bool) (b2:bool) : bool :=
+--   match b1 with
+--   | true => b2
+--   | false => false
+--   end.
+_∧_ : Bool -> Bool -> Bool
+true ∧ b = b
+false ∧ b = false
+
+-- Definition orb (b1:bool) (b2:bool) : bool :=
+--   match b1 with
+--   | true => true
+--   | false => b2
+--   end.
+_∨_ : Bool -> Bool -> Bool
+true  ∨ b = true
+false ∨ b = b
+
 -- Fixpoint beq_nat (n m : nat) : bool :=
 --   match n with
 --   | O => match m with
@@ -286,3 +313,84 @@ mult-comm n (suc m) rewrite (push n m)
                     | mult-comm m n
                     = refl
 
+-- Theorem ble_nat_refl : ∀n:nat,
+--   true = ble_nat n n.
+n<=n : (n : Nat) -> true == (n <= n)
+n<=n zero = refl
+n<=n (suc n) rewrite n<=n n = refl
+
+-- Theorem zero_nbeq_S : ∀n:nat,
+--   beq_nat 0 (S n) = false.
+0=Sn-false : (n : Nat) -> (0 =N (suc n)) == false
+0=Sn-false n = refl
+
+-- Theorem andb_false_r : ∀b : bool,
+--   andb b false = false.
+b∧false-false : (b : Bool) -> (b ∧ false) == false
+b∧false-false false = refl
+b∧false-false true = refl
+
+-- Theorem plus_ble_compat_l : ∀n m p : nat,
+--   ble_nat n m = true → ble_nat (p + n) (p + m) = true.
+weak-<= : (n m : Nat) -> (n <= (n +N m)) == true
+weak-<= n zero rewrite plus-comm n 0
+                       | n<=n n = refl
+weak-<= zero (suc m) = refl
+weak-<= (suc n) m rewrite weak-<= n m = refl
+
+plus-<=-compat : (n m p : Nat) ->
+  (n <= m) == true -> ((p +N n) <= (p +N m)) == true
+plus-<=-compat zero zero p q rewrite n<=n (p +N 0) = q
+plus-<=-compat (suc n) zero p ()
+plus-<=-compat zero (suc m) p q rewrite plus-comm p 0
+                                | weak-<= p (suc m) = refl
+plus-<=-compat (suc n) (suc m) p q rewrite plus-comm p (suc n)
+                                   | plus-comm p (suc m)
+                                   | plus-comm n p
+                                   | plus-comm m p
+                                   | plus-<=-compat n m p q
+                                   = refl
+
+-- Theorem S_nbeq_0 : ∀n:nat,
+--   beq_nat (S n) 0 = false.
+Sn=0-false : (n : Nat) -> ((suc n) =N 0) == false
+Sn=0-false n = refl
+
+-- Theorem mult_1_l : ∀n:nat, 1 * n = n.
+1*n=n : (n : Nat) -> (1 *N n) == n
+1*n=n n rewrite plus-comm n 0 = refl
+
+-- Theorem all3_spec : ∀b c : bool,
+--     orb
+--       (andb b c)
+--       (orb (negb b)
+--                (negb c))
+--   = true.
+all3-spec : (b c : Bool) -> ((b ∧ c) ∨ ((¬ b) ∨  (¬ c))) == true
+all3-spec false false = refl
+all3-spec false true = refl
+all3-spec true false = refl
+all3-spec true true = refl
+
+-- Theorem mult_plus_distr_r : ∀n m p : nat,
+--   (n + m) * p = (n * p) + (m * p).
+mult-plus-distr : (n m p : Nat) ->
+  ((n +N m) *N p) == ((n *N p) +N (m *N p))
+mult-plus-distr zero m p = refl
+mult-plus-distr (suc n) m p rewrite mult-plus-distr n m p
+                            | plus-assoc p (n *N p) (m *N p)
+                            = refl
+
+-- Theorem mult_assoc : ∀n m p : nat,
+--   n * (m * p) = (n * m) * p.
+mult-assoc : (n m p : Nat) -> (n *N (m *N p)) == ((n *N m) *N p)
+mult-assoc zero m p = refl
+mult-assoc (suc n) m p rewrite mult-assoc n m p
+                       | mult-plus-distr m (n *N m) p
+                       = refl
+
+-- Theorem bool_fn_applied_thrice :
+--   ∀(f : bool → bool) (b : bool),
+--   f (f (f b)) = f b.
+bool-fn-thrice : (f : Bool -> Bool) -> (b : Bool) -> f (f (f b)) == f b
+bool-fn-thrice f b = {!!}
