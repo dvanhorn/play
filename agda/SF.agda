@@ -1,6 +1,12 @@
 -- Software Foundations in Agda
 module SF where
 
+-- Prove yourself
+-- Prove yourself
+-- Prove yourself
+--
+-- Y?
+
 -- Ch. Basics
 data Nat : Set where
   zero : Nat
@@ -37,7 +43,7 @@ suc n +N y = suc (n +N y)
 --   | S n', S m' => minus n' m'
 --   end.
 _*N_ : Nat -> Nat -> Nat
-zero *N m = zero
+zero  *N m = zero
 suc n *N m = m +N (n *N m)
 
 
@@ -48,8 +54,8 @@ suc n *N m = m +N (n *N m)
 --   | S n', S m' => minus n' m'
 --   end.
 _-N_ : Nat -> Nat -> Nat
-zero -N m = zero
-n -N zero = n
+zero  -N m = zero
+n     -N zero = n
 suc n -N suc m = n -N m
 
 
@@ -75,7 +81,7 @@ data Bool : Set where
 --   | false => false
 --   end.
 _∧_ : Bool -> Bool -> Bool
-true ∧ b = b
+true  ∧ b = b
 false ∧ b = false
 
 -- Definition orb (b1:bool) (b2:bool) : bool :=
@@ -99,9 +105,9 @@ false ∨ b = b
 --             end
 --   end.
 _=N_ : (m n : Nat) → Bool
-zero =N zero = true
-zero =N suc y = false
-suc m =N zero = false
+zero  =N zero  = true
+zero  =N suc y = false
+suc m =N zero  = false
 suc m =N suc n = m =N n
 
 -- Fixpoint ble_nat (n m : nat) : bool :=
@@ -114,9 +120,9 @@ suc m =N suc n = m =N n
 --       end
 --   end.
 _<=_ : (n m : Nat) → Bool
-zero <= zero = true
-zero <= suc n = true
-suc n <= zero = false
+zero  <= zero  = true
+zero  <= suc n = true
+suc n <= zero  = false
 suc n <= suc m = n <= m
 
 -- Example test_ble_nat1: (ble_nat 2 2) = true.
@@ -163,8 +169,8 @@ plus_id m .m refl = refl
 
 -- Theorem plus_id_exercise : ∀n m o : nat,
 --  n = m → m = o → n + m = m + o.
-plus_id_exercise : (n m o : Nat) →
-  (n == m) → (m == o) → (n +N m) == (m +N o)
+plus_id_exercise : (n m o : Nat) ->
+  (n == m) -> (m == o) -> (n +N m) == (m +N o)
 plus_id_exercise .o .o o refl refl = refl
 
 -- Theorem mult_0_plus : ∀n m : nat,
@@ -173,7 +179,7 @@ plus_id_exercise .o .o o refl refl = refl
 --   intros n m.
 --   rewrite → plus_O_n.
 --   reflexivity. Qed.
-mult_Z_plus : (n m : Nat) → ((0 +N n) *N m) == (n *N m)
+mult_Z_plus : (n m : Nat) -> ((0 +N n) *N m) == (n *N m)
 mult_Z_plus n m = refl
 
 -- Theorem mult_1_plus : ∀n m : nat,
@@ -183,7 +189,7 @@ mult_S_plus n m = refl
 
 -- Theorem plus_1_neq_0_firsttry : ∀n : nat,
 --   beq_nat (n + 1) 0 = false.
-plus_S_neq_Z : (n : Nat) → ((n +N 1) =N 0) == false
+plus_S_neq_Z : (n : Nat) -> ((n +N 1) =N 0) == false
 plus_S_neq_Z zero = refl
 plus_S_neq_Z (suc n) = refl
 
@@ -394,3 +400,120 @@ mult-assoc (suc n) m p rewrite mult-assoc n m p
 --   f (f (f b)) = f b.
 bool-fn-thrice : (f : Bool -> Bool) -> (b : Bool) -> f (f (f b)) == f b
 bool-fn-thrice f b = {!!}
+
+data Fin : Nat -> Set where
+  zero : {n : Nat} → Fin (suc n)
+  suc : {n : Nat} -> (i : Fin n) -> Fin (suc n)
+
+fog : {n : Nat} -> Fin n -> Nat
+fog zero = zero
+fog (suc i) = suc (fog i)
+
+-- "bit strings of base n"
+data Bits (n : Nat) : Set where
+  [] : Bits n
+  _::_ : (b : Fin n) -> (bs : Bits n) -> Bits n
+
+
+carry : Bits 2 -> Bits 2
+carry [] = suc zero :: []
+carry (zero :: bs)         = suc zero :: bs
+carry (suc zero :: bs)     = zero :: carry bs
+carry (suc (suc ()) :: bs)
+
+bsuc : Bits 2 -> Bits 2
+bsuc [] = zero :: []
+bsuc (zero :: bs)          = suc zero :: bs
+bsuc (suc zero :: bs)      = zero :: carry bs
+bsuc ((suc (suc ())) :: bs)
+
+#0 : Fin 2
+#0 = zero
+
+#1 : Fin 2
+#1 = suc zero
+
+expt : {n : Nat} -> Nat -> Nat
+expt zero = (suc zero)
+expt {n} (suc p) = n *N (expt {n} p)
+
+test-expt0 : expt {0} 0 == 1
+test-expt0 = refl
+
+test-expt1 : expt {1} 0 == 1
+test-expt1 = refl
+
+test-expt2 : expt {1} 1 == 1
+test-expt2 = refl
+
+test-expt3 : expt {2} 8 == 256
+test-expt3 = refl
+
+-- Don't try this at home
+-- test-expt4 : expt {2} 32 == 4294967296
+-- test-expt4 = refl
+
+loop : {n : Nat} -> (Bits n) -> Nat -> Nat
+loop {n} []        l = 0
+loop {n} (b :: bs) l = ((fog b) *N (expt {n} l)) +N (loop {n} bs (suc l))
+
+bits->nat : {n : Nat} -> Bits n -> Nat
+bits->nat [] = 0
+bits->nat bs = suc (loop bs 0)
+
+loop-inv : {n : Nat} -> (b : Fin n) -> (bs : Bits n) -> (l : Nat) ->
+  (loop (b :: bs) l) == (((fog b) *N (expt {n} l)) +N (loop bs (suc l)))
+loop-inv b bs l = refl
+
+plus-rid : (n : Nat) -> (n +N 0) == n
+plus-rid zero = refl
+plus-rid (suc n) rewrite plus-rid n = refl
+
+loop-inv' : (bs : Bits 2) -> (l : Nat) ->
+  (loop (carry bs) l) == ((expt {2} l) +N (loop bs l))
+loop-inv' [] l rewrite plus-rid (expt {2} l)
+               | plus-rid (expt {2} l)
+               = refl
+loop-inv' (zero :: bs) l rewrite plus-rid (expt {2} l) = refl
+loop-inv' (suc zero :: bs) l rewrite plus-rid (expt {2} l) = {!!}
+loop-inv' (suc (suc ()) :: bs) l
+
+-- carry-lem : (b : Fin 2) -> (bs : Bits 2) ->
+--   (suc (loop (carry (b :: bs)) 1)) == (suc (suc (suc (loop (b :: bs) 1))))
+-- carry-lem bs = {!!}
+
+test-b2n0 : ∀ (n : Nat) -> (bits->nat {n} [] == 0)
+test-b2n0 n = refl
+
+test-b2n1 : (bits->nat {2} (#0 :: [])) == 1
+test-b2n1 = refl
+
+test-b2n2 : (bits->nat {2} (#1 :: [])) == 2
+test-b2n2 = refl
+
+test-b2n3 : (bits->nat {2} (#0 :: (#1 :: []))) == 3
+test-b2n3 = refl
+
+test-b2n4 : (bits->nat {2} (#1 :: (#1 :: []))) == 4
+test-b2n4 = refl
+
+test-b2n5 : (bits->nat {2} (#0 :: (#0 :: (#1 :: [])))) == 5
+test-b2n5 = refl
+
+nat->bits : Nat -> Bits 2
+nat->bits zero = []
+nat->bits (suc n) = bsuc (nat->bits n)
+
+nat-suc-round : (bs : Bits 2) ->
+  bits->nat (bsuc bs) == suc (bits->nat {2} bs)
+nat-suc-round [] = refl
+nat-suc-round (zero :: bs) = {!!}
+nat-suc-round (suc zero :: bs) = {!!}
+nat-suc-round (suc (suc ()) :: bs)
+
+nat-round : (n : Nat) -> n == (bits->nat {2} (nat->bits n))
+nat-round zero = refl
+nat-round (suc n) = {!!}
+
+normalize : Bits 2 -> Bits 2
+normalize bs = {!!}
