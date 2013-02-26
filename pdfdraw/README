@@ -1,0 +1,3 @@
+This is a simple replacement for the "draw.ss" library that renders to
+high-quality PDF.  It is implement in terms of the slideshow/pict
+library.

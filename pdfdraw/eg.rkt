@@ -1,0 +1,17 @@
+#lang racket
+;(require htdp/draw)
+(require "pdfdraw.rkt")
+(require lang/posn)
+(start 200 200)
+(draw-circle (make-posn 0 0) 30 'red)
+(draw-solid-disk (make-posn 50 50) 30 'blue)
+(draw-solid-rect (make-posn 100 50) 30 60 'yellow)
+(draw-solid-rect (make-posn 10 150) 30 60 'green)
+(clear-circle (make-posn 50 50) 15 'red) ; color is irrelevant
+(clear-solid-disk (make-posn 100 50) 30 'purple)
+(clear-solid-rect (make-posn  10 150) 15 30 'orange)
+(draw-solid-string (make-posn 100 50) "Hello")
+(clear-solid-string (make-posn 50 50) "Goodbye")
+(draw-solid-line (make-posn 50 50) (make-posn 10 150) 'brown)
+;(clear-all)
+(stop)
